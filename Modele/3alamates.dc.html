@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;background:#EDE9DE;-webkit-tap-highlight-color:transparent;}
+    *{box-sizing:border-box;}
+    input, textarea{font-family:'Cairo',sans-serif;}
+    ::placeholder{color:#A3ACA4;}
+  </style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 16px;">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="402" height="874" hint-size="402px,874px">
+
+  <div style="{{ rootStyle }}">
+
+    <div style="flex:none;padding:54px 20px 10px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:9px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.2L5 21V4.5a1 1 0 0 1 1-1Z" stroke="{{ accentSolid }}" stroke-width="1.7" stroke-linejoin="round"/></svg>
+        <span style="{{ headerTitleStyle }}">علامات</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button onClick="{{ openList }}" style="{{ listBtnStyle }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.2L5 21V4.5a1 1 0 0 1 1-1Z" stroke="{{ inkSoft }}" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span>{{ savedCountLabel }}</span>
+        </button>
+        <button onClick="{{ openMenu }}" aria-label="القائمة" style="{{ menuBtnStyle }}">
+          <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.8" fill="currentColor"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><circle cx="16" cy="10" r="1.8" fill="currentColor"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 20px 14px;">
+
+      <div style="{{ sectionLabelStyle }}margin:8px 0 6px;">السورة</div>
+      <sc-if value="{{ showSurahPicker }}" hint-placeholder-val="{{ true }}">
+        <input type="text" value="{{ surahQuery }}" onChange="{{ onSurahQueryChange }}" placeholder="ابحث بالاسم أو الرقم..." style="{{ surahInputStyle }}" />
+        <div style="{{ surahDropdownStyle }}">
+          <sc-for list="{{ filteredSurahs }}" as="s" hint-placeholder-count="5">
+            <button onClick="{{ s.select }}" style="{{ surahRowStyle }}">
+              <span style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;">
+                <span style="{{ surahNameStyle }}">{{ s.ar }}</span>
+                <span style="{{ surahTrStyle }}">{{ s.tr }}</span>
+              </span>
+              <span style="{{ surahBadgeStyle }}">{{ s.n }}</span>
+            </button>
+          </sc-for>
+          <sc-if value="{{ noSurahResults }}" hint-placeholder-val="{{ false }}">
+            <div style="{{ noResultsStyle }}padding:16px;">لا توجد سورة مطابقة</div>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showSurahChip }}" hint-placeholder-val="{{ false }}">
+        <div style="{{ surahChipStyle }}">
+          <div style="display:flex;flex-direction:column;gap:1px;">
+            <span style="{{ surahChipNameStyle }}">{{ selectedSurahLabel }}</span>
+            <span style="{{ surahChipSubStyle }}">{{ selectedSurahSub }}</span>
+          </div>
+          <button onClick="{{ changeSurah }}" style="{{ surahChipBtnStyle }}">تغيير</button>
+        </div>
+      </sc-if>
+
+      <div style="{{ sectionLabelStyle }}margin:18px 0 6px;">رقم الآية</div>
+      <div style="{{ verseBoxStyle }}">{{ verseDisplayText }}</div>
+      <div style="margin-top:6px;font-size:13px;font-weight:600;{{ verseHelperStyle }}">{{ verseHelperText }}</div>
+
+      <div style="{{ keypadGridStyle }}">
+        <sc-for list="{{ keypadKeys }}" as="k" hint-placeholder-count="12">
+          <button onClick="{{ k.action }}" style="{{ k.style }}">{{ k.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="{{ sectionLabelStyle }}margin:20px 0 8px;">التصنيف <span style="font-weight:500;{{ mutedFaintColor }}">(اختياري)</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="5">
+          <button onClick="{{ cat.toggle }}" style="{{ cat.chipStyle }}">{{ cat.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="{{ sectionLabelStyle }}margin:20px 0 6px;">ملاحظة <span style="font-weight:500;{{ mutedFaintColor }}">(اختياري)</span></div>
+      <input type="text" value="{{ note }}" onChange="{{ onNoteChange }}" placeholder="مثال: تلاوة الفجر" style="{{ surahInputStyle }}" />
+
+      <sc-if value="{{ hasFormError }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:14px;font-size:13.5px;font-weight:700;{{ errorTextStyle }}text-align:center;">{{ formError }}</div>
+      </sc-if>
+      <div style="height:6px;"></div>
+    </div>
+
+    <div style="{{ ctaBarStyle }}">
+      <button onClick="{{ save }}" style="{{ saveButtonStyle }}">حفظ الإشارة</button>
+    </div>
+
+    <sc-if value="{{ toastVisible }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ toastStyle }}">{{ toastMessage }}</div>
+    </sc-if>
+
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeMenu }}" style="position:fixed;inset:0;z-index:29;background:transparent;"></div>
+      <div style="{{ menuPanelStyle }}">
+        <button onClick="{{ exportData }}" style="{{ menuItemStyle }}">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 3v9M6.2 8.8 10 12.6l3.8-3.8" stroke="{{ inkSoft }}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14.5v1.7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1.7" stroke="{{ inkSoft }}" stroke-width="1.5" stroke-linecap="round"/></svg>
+          تصدير الإشارات
+        </button>
+        <div style="{{ menuDividerStyle }}"></div>
+        <button onClick="{{ triggerImport }}" style="{{ menuItemStyle }}">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 13V4M6.2 8.2 10 4.4l3.8 3.8" stroke="{{ inkSoft }}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14.5v1.7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1.7" stroke="{{ inkSoft }}" stroke-width="1.5" stroke-linecap="round"/></svg>
+          استيراد الإشارات
+        </button>
+      </div>
+    </sc-if>
+    <input type="file" id="import-file-input" accept="application/json" onChange="{{ importData }}" style="display:none;" />
+
+    <sc-if value="{{ listOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeList }}" style="position:fixed;inset:0;z-index:39;background:rgba(0,0,0,0.42);"></div>
+    </sc-if>
+
+    <div style="{{ listContainerStyle }}">
+      <div style="flex:none;display:flex;flex-direction:column;align-items:center;">
+        <div style="{{ handleBarStyle }}"></div>
+        <div style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 18px 4px;">
+          <span style="{{ listTitleStyle }}">الإشارات المحفوظة</span>
+          <button onClick="{{ closeList }}" aria-label="إغلاق" style="{{ menuBtnStyle }}">
+            <svg width="14" height="14" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1 1 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div style="width:100%;padding:2px 0 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+          <div style="display:flex;gap:8px;padding:0 18px;width:max-content;">
+            <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="6">
+              <button onClick="{{ tab.select }}" style="{{ tab.style }}">{{ tab.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="width:100%;padding:0 18px 12px;">
+          <div style="{{ searchBarStyle }}">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" style="flex:none;"><circle cx="9" cy="9" r="6.2" stroke="{{ muted }}" stroke-width="1.7"/><path d="m17 17-3.4-3.4" stroke="{{ muted }}" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <input type="text" value="{{ searchQuery }}" onChange="{{ onSearchChange }}" placeholder="ابحث في الإشارات المحفوظة" style="{{ searchInputStyle }}" />
+            <sc-if value="{{ hasSearchQuery }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ clearSearch }}" aria-label="مسح البحث" style="{{ clearBtnStyle }}">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1 1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 18px 20px;display:flex;flex-direction:column;gap:12px;">
+
+        <sc-if value="{{ showEmptyState }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:44px 20px 20px;gap:14px;">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.2" stroke="{{ border }}" stroke-width="1.4"/><path d="M9 4.2h6a1 1 0 0 1 1 1V18l-4-2.4-4 2.4V5.2a1 1 0 0 1 1-1Z" stroke="{{ muted }}" stroke-width="1.4" stroke-linejoin="round"/></svg>
+            <div style="{{ listTitleStyle }}font-size:16px;">لا توجد إشارات محفوظة بعد</div>
+            <div style="{{ mutedTextStyle }}line-height:1.7;max-width:230px;">أضف إشارتك الأولى من الشاشة الرئيسية</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showNoResults }}" hint-placeholder-val="{{ false }}">
+          <div style="{{ noResultsStyle }}padding:56px 20px;">لا توجد نتائج مطابقة لبحثك</div>
+        </sc-if>
+
+        <sc-for list="{{ displayReferences }}" as="entry" hint-placeholder-count="2">
+          <div style="{{ entry.cardStyle }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div style="{{ entry.refLabelStyle }}">{{ entry.refLabel }}</div>
+              <sc-if value="{{ entry.hasCategory }}" hint-placeholder-val="{{ false }}">
+                <span style="{{ entry.badgeStyle }}">{{ entry.categoryLabel }}</span>
+              </sc-if>
+            </div>
+            <sc-if value="{{ entry.hasNote }}" hint-placeholder-val="{{ false }}">
+              <div style="{{ entry.noteStyle }}">{{ entry.note }}</div>
+            </sc-if>
+            <div style="{{ entry.actionsRowStyle }}">
+              <sc-if value="{{ entry.confirmingDelete }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:13px;{{ errorTextStyle }}font-weight:600;margin-left:auto;">حذف هذه الإشارة؟</span>
+                <button onClick="{{ entry.confirmDelete }}" aria-label="تأكيد الحذف" style="{{ entry.confirmBtnStyle }}">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5 6 12l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button onClick="{{ entry.cancelDelete }}" aria-label="إلغاء" style="{{ entry.cancelBtnStyle }}">
+                  <svg width="14" height="14" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1 1 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </button>
+              </sc-if>
+              <sc-if value="{{ entry.notConfirmingDelete }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ entry.copy }}" aria-label="نسخ" style="{{ entry.iconBtnStyle }}">
+                  <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="10.5" height="10.5" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 12.5V4.5a1 1 0 0 1 1-1H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </button>
+                <button onClick="{{ entry.share }}" aria-label="مشاركة" style="{{ entry.iconBtnStyle }}">
+                  <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M6 10.5v5a1 1 0 0 0 1 1h8.5a1 1 0 0 0 1-1v-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10.25 12.2V3M7.2 6.1l3.05-3.1 3.05 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button onClick="{{ entry.requestDelete }}" aria-label="حذف" style="{{ entry.deleteBtnStyle }}">
+                  <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M4.5 6.2h11M8.2 6.2V4.5a1 1 0 0 1 1-1h1.6a1 1 0 0 1 1 1v1.7M6.2 6.2 6.9 16a1 1 0 0 0 1 .9h4.2a1 1 0 0 0 1-.9l.7-9.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+
+      </div>
+    </div>
+
+  </div>
+
+</x-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 480, &quot;height&quot;: 940},
+  &quot;accentColor&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#1F6B54&quot;, &quot;options&quot;: [&quot;#1F6B54&quot;, &quot;#8B3A42&quot;, &quot;#3B54A6&quot;, &quot;#96702A&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;المظهر&quot;},
+  &quot;darkMode&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;المظهر&quot;},
+  &quot;numeralStyle&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;western&quot;, &quot;options&quot;: [&quot;western&quot;, &quot;eastern&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;سلوك&quot;},
+  &quot;keypadDirection&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;ltr&quot;, &quot;options&quot;: [&quot;ltr&quot;, &quot;rtl&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;سلوك&quot;},
+  &quot;defaultCategory&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;none&quot;, &quot;options&quot;: [&quot;none&quot;, &quot;hifz&quot;, &quot;muraja&quot;, &quot;qiraa&quot;, &quot;tafsir&quot;, &quot;salah&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;سلوك&quot;}
+}">
+const RAW_SURAHS = [
+[1,"الفاتحة","Al-Fatiha",7],[2,"البقرة","Al-Baqarah",286],[3,"آل عمران","Aal-Imran",200],[4,"النساء","An-Nisa",176],
+[5,"المائدة","Al-Ma'idah",120],[6,"الأنعام","Al-An'am",165],[7,"الأعراف","Al-A'raf",206],[8,"الأنفال","Al-Anfal",75],
+[9,"التوبة","At-Tawbah",129],[10,"يونس","Yunus",109],[11,"هود","Hud",123],[12,"يوسف","Yusuf",111],
+[13,"الرعد","Ar-Ra'd",43],[14,"ابراهيم","Ibrahim",52],[15,"الحجر","Al-Hijr",99],[16,"النحل","An-Nahl",128],
+[17,"الإسراء","Al-Isra",111],[18,"الكهف","Al-Kahf",110],[19,"مريم","Maryam",98],[20,"طه","Taha",135],
+[21,"الأنبياء","Al-Anbiya",112],[22,"الحج","Al-Hajj",78],[23,"المؤمنون","Al-Mu'minun",118],[24,"النور","An-Nur",64],
+[25,"الفرقان","Al-Furqan",77],[26,"الشعراء","Ash-Shu'ara",227],[27,"النمل","An-Naml",93],[28,"القصص","Al-Qasas",88],
+[29,"العنكبوت","Al-Ankabut",69],[30,"الروم","Ar-Rum",60],[31,"لقمان","Luqman",34],[32,"السجدة","As-Sajdah",30],
+[33,"الأحزاب","Al-Ahzab",73],[34,"سبأ","Saba",54],[35,"فاطر","Fatir",45],[36,"يس","Ya-Sin",83],
+[37,"الصافات","As-Saffat",182],[38,"ص","Sad",88],[39,"الزمر","Az-Zumar",75],[40,"غافر","Ghafir",85],
+[41,"فصلت","Fussilat",54],[42,"الشورى","Ash-Shura",53],[43,"الزخرف","Az-Zukhruf",89],[44,"الدخان","Ad-Dukhan",59],
+[45,"الجاثية","Al-Jathiyah",37],[46,"الأحقاف","Al-Ahqaf",35],[47,"محمد","Muhammad",38],[48,"الفتح","Al-Fath",29],
+[49,"الحجرات","Al-Hujurat",18],[50,"ق","Qaf",45],[51,"الذاريات","Adh-Dhariyat",60],[52,"الطور","At-Tur",49],
+[53,"النجم","An-Najm",62],[54,"القمر","Al-Qamar",55],[55,"الرحمن","Ar-Rahman",78],[56,"الواقعة","Al-Waqi'ah",96],
+[57,"الحديد","Al-Hadid",29],[58,"المجادلة","Al-Mujadilah",22],[59,"الحشر","Al-Hashr",24],[60,"الممتحنة","Al-Mumtahanah",13],
+[61,"الصف","As-Saff",14],[62,"الجمعة","Al-Jumu'ah",11],[63,"المنافقون","Al-Munafiqun",11],[64,"التغابن","At-Taghabun",18],
+[65,"الطلاق","At-Talaq",12],[66,"التحريم","At-Tahrim",12],[67,"الملك","Al-Mulk",30],[68,"القلم","Al-Qalam",52],
+[69,"الحاقة","Al-Haqqah",52],[70,"المعارج","Al-Ma'arij",44],[71,"نوح","Nuh",28],[72,"الجن","Al-Jinn",28],
+[73,"المزمل","Al-Muzzammil",20],[74,"المدثر","Al-Muddaththir",56],[75,"القيامة","Al-Qiyamah",40],[76,"الإنسان","Al-Insan",31],
+[77,"المرسلات","Al-Mursalat",50],[78,"النبأ","An-Naba",40],[79,"النازعات","An-Nazi'at",46],[80,"عبس","Abasa",42],
+[81,"التكوير","At-Takwir",29],[82,"الإنفطار","Al-Infitar",19],[83,"المطففين","Al-Mutaffifin",36],[84,"الإنشقاق","Al-Inshiqaq",25],
+[85,"البروج","Al-Buruj",22],[86,"الطارق","At-Tariq",17],[87,"الأعلى","Al-A'la",19],[88,"الغاشية","Al-Ghashiyah",26],
+[89,"الفجر","Al-Fajr",30],[90,"البلد","Al-Balad",20],[91,"الشمس","Ash-Shams",15],[92,"الليل","Al-Layl",21],
+[93,"الضحى","Ad-Duha",11],[94,"الشرح","Al-Inshirah",8],[95,"التين","At-Tin",8],[96,"العلق","Al-Alaq",19],
+[97,"القدر","Al-Qadr",5],[98,"البينة","Al-Bayyinah",8],[99,"الزلزلة","Az-Zalzalah",8],[100,"العاديات","Al-Adiyat",11],
+[101,"القارعة","Al-Qari'ah",11],[102,"التكاثر","At-Takathur",8],[103,"العصر","Al-Asr",3],[104,"الهمزة","Al-Humazah",9],
+[105,"الفيل","Al-Fil",5],[106,"قريش","Quraysh",4],[107,"الماعون","Al-Ma'un",7],[108,"الكوثر","Al-Kawthar",3],
+[109,"الكافرون","Al-Kafirun",6],[110,"النصر","An-Nasr",3],[111,"المسد","Al-Masad",5],[112,"الإخلاص","Al-Ikhlas",4],
+[113,"الفلق","Al-Falaq",5],[114,"الناس","An-Nas",6]
+];
+const SURAHS = RAW_SURAHS.map(([n,ar,tr,c])=>({n,ar,tr,c}));
+const CATEGORY_ORDER = ['hifz','muraja','qiraa','tafsir','salah'];
+const CATEGORY_LIGHT = {
+  hifz:{label:'حفظ',bg:'#E3EFE9',text:'#1F6B54'},
+  muraja:{label:'مراجعة',bg:'#F6ECD9',text:'#96702A'},
+  qiraa:{label:'قراءة',bg:'#E8EEF4',text:'#43596E'},
+  tafsir:{label:'تفسير',bg:'#F1E9F2',text:'#7C5286'},
+  salah:{label:'صلاة',bg:'#EAF1E6',text:'#4C7A44'},
+};
+const CATEGORY_DARK = {
+  hifz:{label:'حفظ',bg:'#1D3229',text:'#7FCDAE'},
+  muraja:{label:'مراجعة',bg:'#332A18',text:'#E0B968'},
+  qiraa:{label:'قراءة',bg:'#1E2A33',text:'#8FB0CC'},
+  tafsir:{label:'تفسير',bg:'#2E2233',text:'#C79AD1'},
+  salah:{label:'صلاة',bg:'#1F2E1B',text:'#8FC084'},
+};
+const LIGHT_T = { bg:'#FBF8F3', panel:'#FFFFFF', input:'#F2EEE2', border:'#E7E0D0', ink:'#22302A', inkSoft:'#5C6B62', muted:'#8B9690', mutedFaint:'#A3ACA4', divider:'#F2EEE2', error:'#B23B3B', toast:'#22302A' };
+const DARK_T = { bg:'#12201A', panel:'#17281F', input:'#1E332A', border:'#2B4438', ink:'#F1EEE3', inkSoft:'#B7C4BC', muted:'#7E8F86', mutedFaint:'#5E6E66', divider:'#233A2F', error:'#E27373', toast:'#2C4A3D' };
+const ACCENTS = {
+  '#1F6B54': { solid:'#1F6B54', soft:'#E3EFE9', softText:'#1F6B54', darkSoft:'#1D3229', darkSoftText:'#7FCDAE', shadow:'rgba(31,107,84,.3)' },
+  '#8B3A42': { solid:'#8B3A42', soft:'#F3E3E4', softText:'#8B3A42', darkSoft:'#3A2023', darkSoftText:'#E29AA0', shadow:'rgba(139,58,66,.3)' },
+  '#3B54A6': { solid:'#3B54A6', soft:'#E4E8F5', softText:'#3B54A6', darkSoft:'#1E2740', darkSoftText:'#9FB0E0', shadow:'rgba(59,84,166,.3)' },
+  '#96702A': { solid:'#96702A', soft:'#F5ECD9', softText:'#96702A', darkSoft:'#332A18', darkSoftText:'#E0B968', shadow:'rgba(150,112,42,.3)' },
+};
+const EASTERN = {'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩'};
+
+class Component extends DCLogic {
+  state = {
+    surahQuery: '', selectedN: null, verseDigits: '', category: null, note: '',
+    listOpen: false, menuOpen: false, searchQuery: '', toastMessage: '',
+    deleteConfirmId: null, formError: '', lastSavedId: null, activeTab: 'all',
+    references: [
+      { id: 'seed1', n: 2, verse: 255, category: 'hifz', note: 'آية الكرسي - حفظ يومي', ts: Date.now() - 500000 },
+      { id: 'seed2', n: 18, verse: 10, category: 'qiraa', note: '', ts: Date.now() - 200000 },
+    ],
+  };
+
+  componentDidMount() {
+    if (this.props.defaultCategory && this.props.defaultCategory !== 'none') {
+      this.setState({ category: this.props.defaultCategory });
+    }
+  }
+
+  toEastern(n) { return String(n).split('').map(ch => EASTERN[ch] !== undefined ? EASTERN[ch] : ch).join(''); }
+  fmt(n) { return this.props.numeralStyle === 'eastern' ? this.toEastern(n) : String(n); }
+
+  pressDigit(d) {
+    this.setState(s => {
+      if (s.verseDigits.length >= 3) return null;
+      let nd = s.verseDigits + d;
+      if (nd.length > 1 && nd[0] === '0') nd = d;
+      return { verseDigits: nd, formError: '' };
+    });
+  }
+  backspace() { this.setState(s => ({ verseDigits: s.verseDigits.slice(0, -1) })); }
+  selectSurah(n) { this.setState({ selectedN: n, verseDigits: '', formError: '' }); }
+  changeSurah() { this.setState({ selectedN: null, surahQuery: '' }); }
+  toggleCategory(key) { this.setState(s => ({ category: s.category === key ? null : key })); }
+  onNoteChange(e) { this.setState({ note: e.target.value }); }
+  onSurahQueryChange(e) { this.setState({ surahQuery: e.target.value }); }
+  onSearchChange(e) { this.setState({ searchQuery: e.target.value }); }
+  clearSearch() { this.setState({ searchQuery: '' }); }
+  selectTab(key) { this.setState({ activeTab: key }); }
+
+  openMenu() { this.setState({ menuOpen: true }); }
+  closeMenu() { this.setState({ menuOpen: false }); }
+  triggerImport() { this.setState({ menuOpen: false }); const el = document.getElementById('import-file-input'); if (el) el.click(); }
+
+  openList() { this.setState({ listOpen: true, menuOpen: false }); }
+  closeList() { this.setState({ listOpen: false }); }
+
+  showToast(msg) {
+    clearTimeout(this._toastTimer);
+    this.setState({ toastMessage: msg });
+    this._toastTimer = setTimeout(() => this.setState({ toastMessage: '' }), 1800);
+  }
+
+  save() {
+    const surah = SURAHS.find(s => s.n === this.state.selectedN);
+    if (!surah) { this.setState({ formError: 'يرجى اختيار السورة أولاً' }); return; }
+    const v = parseInt(this.state.verseDigits, 10);
+    if (!v || v < 1 || v > surah.c) { this.setState({ formError: 'رقم الآية غير صحيح لهذه السورة' }); return; }
+    const item = { id: 'r' + Date.now(), n: surah.n, verse: v, category: this.state.category, note: this.state.note.trim(), ts: Date.now() };
+    this.setState({ references: [item, ...this.state.references], selectedN: null, verseDigits: '', category: null, note: '', surahQuery: '', formError: '', lastSavedId: item.id });
+    this.showToast('تم حفظ الإشارة');
+    clearTimeout(this._hiTimer);
+    this._hiTimer = setTimeout(() => this.setState({ lastSavedId: null }), 2400);
+  }
+
+  requestDelete(id) { this.setState({ deleteConfirmId: id }); }
+  cancelDelete() { this.setState({ deleteConfirmId: null }); }
+  confirmDelete(id) { this.setState(s => ({ references: s.references.filter(r => r.id !== id), deleteConfirmId: null })); this.showToast('تم الحذف'); }
+
+  copyRef(text) { try { navigator.clipboard && navigator.clipboard.writeText(text); } catch (e) {} this.showToast('تم النسخ'); }
+  shareRef(text) {
+    if (navigator.share) { navigator.share({ text }).catch(() => {}); this.showToast('تمت المشاركة'); return; }
+    try { navigator.clipboard && navigator.clipboard.writeText(text); } catch (e) {}
+    this.showToast('تم نسخ الإشارة للمشاركة');
+  }
+
+  exportData() {
+    this.setState({ menuOpen: false });
+    try {
+      const data = JSON.stringify(this.state.references, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = '3alamates-export.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      this.showToast('تم تصدير الإشارات');
+    } catch (e) { this.showToast('تعذر التصدير'); }
+  }
+  importData(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(x => x && x.n && x.verse).map(x => ({ id: 'imp' + Math.random().toString(36).slice(2), n: x.n, verse: x.verse, category: x.category || null, note: x.note || '', ts: Date.now() }));
+          this.setState(s => ({ references: [...cleaned, ...s.references] }));
+          this.showToast('تم استيراد ' + cleaned.length + ' إشارة');
+        } else { this.showToast('ملف غير صالح'); }
+      } catch (err) { this.showToast('ملف غير صالح'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const dark = !!this.props.darkMode;
+    const T = dark ? DARK_T : LIGHT_T;
+    const A = ACCENTS[this.props.accentColor] || ACCENTS['#1F6B54'];
+    const accentSolid = A.solid;
+    const accentSoft = dark ? A.darkSoft : A.soft;
+    const accentSoftText = dark ? A.darkSoftText : A.softText;
+    const CAT = dark ? CATEGORY_DARK : CATEGORY_LIGHT;
+
+    const selectedSurah = SURAHS.find(x => x.n === s.selectedN) || null;
+    const font = "font-family:'Cairo',sans-serif;";
+    const chipBase = "height:40px;padding:0 16px;border-radius:20px;" + font + "font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;border:1.5px solid ";
+
+    const categories = CATEGORY_ORDER.map(key => {
+      const meta = CAT[key];
+      const sel = s.category === key;
+      return {
+        key, label: meta.label, toggle: () => this.toggleCategory(key),
+        chipStyle: sel ? chipBase + meta.text + ';background:' + meta.bg + ';color:' + meta.text + ';' : chipBase + T.border + ';background:' + T.panel + ';color:' + T.inkSoft + ';',
+      };
+    });
+
+    const q = s.surahQuery.trim();
+    const ql = q.toLowerCase();
+    const filteredSurahsRaw = q ? SURAHS.filter(x => x.ar.includes(q) || x.tr.toLowerCase().includes(ql) || String(x.n).includes(q)) : SURAHS;
+    const filteredSurahs = filteredSurahsRaw.slice(0, 60).map(x => ({ n: this.fmt(x.n), ar: x.ar, tr: x.tr, select: () => this.selectSurah(x.n) }));
+
+    let verseHelperText = '', verseHelperColor = T.muted, verseBorderColor = T.border;
+    if (!selectedSurah) { verseHelperText = 'اختر السورة أولاً'; }
+    else {
+      const max = selectedSurah.c;
+      if (!s.verseDigits) { verseHelperText = 'من ' + this.fmt(1) + ' إلى ' + this.fmt(max); }
+      else {
+        const v = parseInt(s.verseDigits, 10);
+        if (v < 1 || v > max) { verseHelperText = 'رقم غير صحيح، من ' + this.fmt(1) + ' إلى ' + this.fmt(max); verseHelperColor = T.error; verseBorderColor = T.error; }
+        else { verseHelperText = 'من ' + this.fmt(1) + ' إلى ' + this.fmt(max); verseHelperColor = accentSolid; verseBorderColor = accentSolid; }
+      }
+    }
+    const isValid = !!(selectedSurah && s.verseDigits && (() => { const v = parseInt(s.verseDigits, 10); return v >= 1 && v <= selectedSurah.c; })());
+
+    const keyBase = "height:56px;border-radius:14px;border:none;" + font + "cursor:pointer;display:flex;align-items:center;justify-content:center;";
+    const digitKey = (d) => ({ label: this.fmt(d), disabled: false, action: () => this.pressDigit(d), style: keyBase + "background:" + T.input + ";font-size:22px;font-weight:700;color:" + T.ink + ";" });
+    const keypadKeys = [
+      digitKey('1'), digitKey('2'), digitKey('3'),
+      digitKey('4'), digitKey('5'), digitKey('6'),
+      digitKey('7'), digitKey('8'), digitKey('9'),
+      { label: '', disabled: true, action: () => {}, style: "height:56px;background:transparent;border:none;" },
+      digitKey('0'),
+      { label: '⌫', disabled: false, action: () => this.backspace(), style: keyBase + "background:" + T.input + ";font-size:19px;color:" + T.inkSoft + ";" },
+    ];
+
+    const dq = s.searchQuery.trim().toLowerCase();
+    const tabDefs = [{ key: 'all', label: 'الكل' }].concat(CATEGORY_ORDER.map(key => ({ key, label: CAT[key].label })));
+    const tabs = tabDefs.map(t => {
+      const sel = s.activeTab === t.key;
+      return {
+        key: t.key, label: t.label, select: () => this.selectTab(t.key),
+        style: "height:36px;padding:0 15px;border-radius:18px;white-space:nowrap;flex:none;" + font + "font-size:13.5px;font-weight:700;cursor:pointer;border:1.5px solid " + (sel ? accentSolid : T.border) + ";background:" + (sel ? accentSolid : T.panel) + ";color:" + (sel ? '#fff' : T.inkSoft) + ";",
+      };
+    });
+    const displayReferences = s.references
+      .filter(r => s.activeTab === 'all' || r.category === s.activeTab)
+      .filter(r => {
+        if (!dq) return true;
+        const surah = SURAHS.find(x => x.n === r.n);
+        const meta = r.category ? CAT[r.category] : null;
+        return (surah && (surah.ar.includes(s.searchQuery.trim()) || surah.tr.toLowerCase().includes(dq)))
+          || (r.note && r.note.toLowerCase().includes(dq))
+          || (meta && meta.label.includes(s.searchQuery.trim()));
+      })
+      .map(r => {
+        const surah = SURAHS.find(x => x.n === r.n);
+        const meta = r.category ? CAT[r.category] : null;
+        const highlighted = s.lastSavedId === r.id;
+        return {
+          id: r.id,
+          refLabel: (surah ? surah.ar : '؟') + ':' + this.fmt(r.verse),
+          refLabelStyle: "font-size:21px;font-weight:700;color:" + T.ink + ";letter-spacing:-.2px;",
+          hasNote: !!r.note, note: r.note, noteStyle: "font-size:14px;color:" + T.inkSoft + ";line-height:1.55;",
+          hasCategory: !!meta, categoryLabel: meta ? meta.label : '',
+          badgeStyle: meta ? "font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;background:" + meta.bg + ";color:" + meta.text + ";flex:none;" : '',
+          cardStyle: "background:" + T.panel + ";border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:9px;border:1.5px solid " + (highlighted ? accentSolid : T.border) + ";" + (highlighted ? "box-shadow:0 4px 16px " + A.shadow + ";" : ''),
+          actionsRowStyle: "display:flex;align-items:center;gap:2px;margin-top:2px;border-top:1px solid " + T.divider + ";padding-top:8px;",
+          confirmingDelete: s.deleteConfirmId === r.id,
+          notConfirmingDelete: s.deleteConfirmId !== r.id,
+          confirmBtnStyle: "width:40px;height:40px;border-radius:10px;border:none;background:" + (dark ? '#3A2023' : '#F8EDEC') + ";color:" + T.error + ";display:flex;align-items:center;justify-content:center;cursor:pointer;",
+          cancelBtnStyle: "width:40px;height:40px;border-radius:10px;border:none;background:" + T.input + ";color:" + T.inkSoft + ";display:flex;align-items:center;justify-content:center;cursor:pointer;",
+          iconBtnStyle: "width:40px;height:40px;border-radius:10px;border:none;background:transparent;color:" + T.inkSoft + ";display:flex;align-items:center;justify-content:center;cursor:pointer;",
+          deleteBtnStyle: "width:40px;height:40px;border-radius:10px;border:none;background:transparent;color:" + T.muted + ";display:flex;align-items:center;justify-content:center;cursor:pointer;margin-right:auto;",
+          copy: () => this.copyRef((surah ? surah.ar : '') + ':' + r.verse),
+          share: () => this.shareRef((surah ? surah.ar : '') + ':' + r.verse),
+          requestDelete: () => this.requestDelete(r.id),
+          confirmDelete: () => this.confirmDelete(r.id),
+          cancelDelete: () => this.cancelDelete(),
+        };
+      });
+
+    const keypadDir = this.props.keypadDirection === 'rtl' ? 'rtl' : 'ltr';
+
+    return {
+      rootStyle: "height:100%;display:flex;flex-direction:column;background:" + T.bg + ";direction:rtl;" + font + "overflow:hidden;position:relative;",
+      accentSolid, inkSoft: T.inkSoft, muted: T.muted, border: T.border,
+      headerTitleStyle: "font-size:22px;font-weight:800;color:" + T.ink + ";letter-spacing:-.3px;",
+      listBtnStyle: "height:38px;padding:0 12px;border-radius:12px;border:none;background:" + T.input + ";display:flex;align-items:center;gap:6px;cursor:pointer;color:" + T.ink + ";" + font + "font-size:13.5px;font-weight:700;",
+      menuBtnStyle: "width:38px;height:38px;border-radius:12px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:" + T.inkSoft + ";",
+      sectionLabelStyle: "font-size:13px;font-weight:700;color:" + T.inkSoft + ";",
+      mutedFaintColor: "color:" + T.mutedFaint + ";",
+      mutedTextStyle: "font-size:14px;color:" + T.muted + ";",
+      noResultsStyle: "text-align:center;color:" + T.muted + ";font-size:14px;",
+      errorTextStyle: "color:" + T.error + ";",
+
+      savedCountLabel: this.fmt(s.references.length),
+      openMenu: () => this.openMenu(), closeMenu: () => this.closeMenu(), menuOpen: s.menuOpen,
+      exportData: () => this.exportData(), triggerImport: () => this.triggerImport(), importData: (e) => this.importData(e),
+      menuPanelStyle: "position:fixed;top:96px;left:20px;background:" + T.panel + ";border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);border:1px solid " + T.border + ";overflow:hidden;z-index:30;min-width:190px;",
+      menuItemStyle: "width:100%;display:flex;align-items:center;gap:10px;padding:13px 14px;border:none;background:transparent;text-align:right;" + font + "font-size:14.5px;font-weight:600;color:" + T.ink + ";cursor:pointer;",
+      menuDividerStyle: "height:1px;background:" + T.divider + ";",
+      toastVisible: !!s.toastMessage, toastMessage: s.toastMessage,
+      toastStyle: "position:fixed;top:64px;left:50%;transform:translateX(-50%);background:" + T.toast + ";color:#fff;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:600;z-index:55;box-shadow:0 8px 20px rgba(0,0,0,.35);white-space:nowrap;",
+
+      showSurahPicker: !selectedSurah, showSurahChip: !!selectedSurah,
+      surahQuery: s.surahQuery, onSurahQueryChange: (e) => this.onSurahQueryChange(e),
+      surahInputStyle: "width:100%;height:48px;border-radius:14px;border:1.5px solid " + T.border + ";background:" + T.panel + ";padding:0 14px;font-size:15px;color:" + T.ink + ";outline:none;",
+      surahDropdownStyle: "max-height:220px;overflow-y:auto;border:1px solid " + T.border + ";border-radius:14px;margin-top:8px;background:" + T.panel + ";",
+      surahRowStyle: "width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border:none;background:transparent;text-align:right;cursor:pointer;border-bottom:1px solid " + T.divider + ";",
+      surahNameStyle: "font-size:15px;font-weight:700;color:" + T.ink + ";",
+      surahTrStyle: "font-size:11.5px;color:" + T.muted + ";",
+      surahBadgeStyle: "font-size:12.5px;color:" + T.muted + ";background:" + T.input + ";border-radius:8px;padding:2px 8px;flex:none;",
+      filteredSurahs, noSurahResults: filteredSurahs.length === 0,
+      surahChipStyle: "display:flex;align-items:center;justify-content:space-between;gap:10px;background:" + accentSoft + ";border-radius:14px;padding:12px 14px;",
+      surahChipNameStyle: "font-size:16px;font-weight:700;color:" + accentSoftText + ";",
+      surahChipSubStyle: "font-size:12px;color:" + accentSoftText + ";opacity:.8;",
+      surahChipBtnStyle: "height:34px;padding:0 14px;border-radius:10px;border:none;background:" + T.panel + ";color:" + accentSolid + ";font-size:13px;font-weight:700;cursor:pointer;",
+      selectedSurahLabel: selectedSurah ? selectedSurah.ar + ' (' + this.fmt(selectedSurah.n) + ')' : '',
+      selectedSurahSub: selectedSurah ? selectedSurah.tr + ' — ' + this.fmt(selectedSurah.c) + ' آية' : '',
+      changeSurah: () => this.changeSurah(),
+
+      verseDisplayText: s.verseDigits ? this.fmt(s.verseDigits) : '—',
+      verseBoxStyle: "display:flex;align-items:center;justify-content:center;height:60px;border-radius:16px;background:" + T.input + ";border:2px solid " + verseBorderColor + ";font-size:30px;font-weight:700;color:" + T.ink + ";font-variant-numeric:tabular-nums;letter-spacing:2px;",
+      verseHelperText, verseHelperStyle: "color:" + verseHelperColor + ";",
+      keypadGridStyle: "display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px;direction:" + keypadDir + ";",
+      keypadKeys,
+
+      categories,
+      note: s.note, onNoteChange: (e) => this.onNoteChange(e),
+
+      hasFormError: !!s.formError, formError: s.formError,
+      save: () => this.save(),
+      ctaBarStyle: "flex:none;padding:12px 20px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(to top," + T.bg + " 65%,rgba(0,0,0,0));",
+      saveButtonStyle: "width:100%;height:56px;border-radius:16px;border:none;font-size:17px;font-weight:700;" + font + "cursor:pointer;" + (isValid ? "background:" + accentSolid + ";color:#fff;box-shadow:0 8px 20px " + A.shadow + ";" : "background:" + T.input + ";color:" + T.muted + ";"),
+
+      listOpen: s.listOpen, openList: () => this.openList(), closeList: () => this.closeList(),
+      listContainerStyle: "position:fixed;left:0;right:0;bottom:0;z-index:40;background:" + T.panel + ";border-radius:26px 26px 0 0;max-height:85%;display:flex;flex-direction:column;box-shadow:0 -10px 40px rgba(0,0,0,.3);transition:transform .32s cubic-bezier(.32,.72,0,1),opacity .25s;" + (s.listOpen ? "transform:translateY(0);opacity:1;pointer-events:auto;" : "transform:translateY(105%);opacity:0;pointer-events:none;"),
+      handleBarStyle: "width:38px;height:5px;background:" + T.border + ";border-radius:3px;margin:10px 0 2px;",
+      listTitleStyle: "font-size:17px;font-weight:700;color:" + T.ink + ";",
+      searchBarStyle: "display:flex;align-items:center;gap:8px;background:" + T.input + ";border-radius:14px;padding:0 14px;height:46px;",
+      searchInputStyle: "flex:1;border:none;background:transparent;outline:none;font-size:15.5px;color:" + T.ink + ";height:100%;min-width:0;",
+      clearBtnStyle: "flex:none;width:26px;height:26px;border-radius:8px;border:none;background:" + T.border + ";display:flex;align-items:center;justify-content:center;cursor:pointer;color:" + T.inkSoft + ";",
+      searchQuery: s.searchQuery, onSearchChange: (e) => this.onSearchChange(e), clearSearch: () => this.clearSearch(), hasSearchQuery: !!s.searchQuery,
+      tabs,
+      showEmptyState: s.references.length === 0, showNoResults: s.references.length > 0 && displayReferences.length === 0,
+      displayReferences,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
