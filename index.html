@@ -242,6 +242,16 @@
       border-bottom: 0;
     }
 
+    .surah-row.active {
+      background: var(--accent-soft);
+    }
+
+    .surah-row.active .surah-name,
+    .surah-row.active .surah-tr,
+    .surah-row.active .surah-badge {
+      color: var(--accent);
+    }
+
     .surah-row-main {
       display: flex;
       flex-direction: column;
@@ -270,14 +280,25 @@
     }
 
     .surah-chip {
+      width: 100%;
       margin-top: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
       background: var(--accent-soft);
+      border: 1.5px solid transparent;
       border-radius: 14px;
       padding: 12px 14px;
+      text-align: right;
+      cursor: pointer;
+    }
+
+    .surah-chip-button.open,
+    .surah-chip-button:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(31, 107, 84, 0.12);
+      outline: none;
     }
 
     .surah-chip-main {
@@ -298,16 +319,28 @@
       opacity: 0.8;
     }
 
-    .surah-chip-btn {
-      height: 34px;
-      padding: 0 14px;
+    .surah-chip-caret {
+      width: 28px;
+      height: 28px;
       border-radius: 10px;
-      border: 0;
-      background: var(--panel);
+      background: rgba(255, 255, 255, 0.78);
       color: var(--accent);
-      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      font-size: 18px;
       font-weight: 700;
-      cursor: pointer;
+      line-height: 1;
+    }
+
+    .surah-search-wrap {
+      margin-top: 8px;
+    }
+
+    .surah-search-bar {
+      background: var(--panel);
+      border: 1.5px solid var(--border);
     }
 
     .verse-row {

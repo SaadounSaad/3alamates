@@ -125,6 +125,8 @@ function iconDelete() {
 
 function App() {
   const importInputRef = useRef(null);
+  const surahSearchInputRef = useRef(null);
+  const selectedSurahRowRef = useRef(null);
   const statusTimerRef = useRef(null);
   const savedDraft = safeJsonParse(localStorage.getItem(STORAGE_KEYS.draft), {});
 
@@ -139,6 +141,7 @@ function App() {
   const [bookmarkSearch, setBookmarkSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [status, setStatus] = useState("");
+  const [surahPickerOpen, setSurahPickerOpen] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState("");
@@ -208,6 +211,21 @@ function App() {
       return searchable.includes(query);
     });
   }, [surahs, searchTerm]);
+
+  useEffect(function () {
+    if (!surahPickerOpen) {
+      return;
+    }
+
+    window.setTimeout(function () {
+      if (!searchTerm && selectedSurahRowRef.current) {
+        selectedSurahRowRef.current.scrollIntoView({ block: "center" });
+      }
+      if (surahSearchInputRef.current) {
+        surahSearchInputRef.current.focus({ preventScroll: true });
+      }
+    }, 0);
+  }, [surahPickerOpen, searchTerm, selectedSurahId, filteredSurahs.length]);
 
   const filteredBookmarks = useMemo(function () {
     const query = normalizeSearch(bookmarkSearch);
@@ -284,9 +302,17 @@ function App() {
   }
 
   function clearForm() {
-    setAyahNumber("");
     setNote("");
     setCategory(categories[0].id);
+  }
+
+  function selectSurah(surah) {
+    setSelectedSurahId(String(surah.id));
+    setAyahNumber(function (current) {
+      return current && Number(current) <= surah.ayahs ? current : "";
+    });
+    setSearchTerm("");
+    setSurahPickerOpen(false);
   }
 
   function addBookmark() {
@@ -400,6 +426,74 @@ function App() {
       event.target.value = "";
     };
     reader.readAsText(file);
+  }
+
+  function renderSurahPicker() {
+    const pickerOpen = surahPickerOpen || !selectedSurah;
+
+    return [
+      h("div", { key: "label", className: "section-label" }, "السورة"),
+      selectedSurah && h("button", {
+        key: "selected",
+        type: "button",
+        className: "surah-chip surah-chip-button" + (surahPickerOpen ? " open" : ""),
+        onClick: function () {
+          setSearchTerm("");
+          setSurahPickerOpen(!surahPickerOpen);
+        },
+        "aria-expanded": pickerOpen,
+        "aria-controls": "surah-options"
+      },
+        h("div", { className: "surah-chip-main" },
+          h("span", { className: "surah-chip-name" }, selectedSurah.nom + " (" + selectedSurah.id + ")"),
+          h("span", { className: "surah-chip-sub" }, selectedSurah.latin + " — " + selectedSurah.ayahs + " آية")
+        ),
+        h("span", { className: "surah-chip-caret", "aria-hidden": "true" }, "⌄")
+      ),
+      pickerOpen && h("div", { key: "search", className: "surah-search-wrap" },
+        h("div", { className: "search-bar surah-search-bar" },
+          iconSearch(),
+          h("input", {
+            ref: surahSearchInputRef,
+            id: "surah-search",
+            className: "search-input",
+            type: "search",
+            value: searchTerm,
+            onChange: function (event) { setSearchTerm(event.target.value); },
+            placeholder: "ابحث بالاسم أو الرقم...",
+            autoComplete: "off"
+          }),
+          searchTerm && h("button", {
+            type: "button",
+            className: "clear-btn",
+            onClick: function () { setSearchTerm(""); },
+            "aria-label": "مسح البحث"
+          }, iconClose())
+        )
+      ),
+      pickerOpen && h("div", { key: "options", id: "surah-options", className: "surah-dropdown", role: "listbox" },
+        filteredSurahs.length
+          ? filteredSurahs.map(function (surah) {
+              const active = String(surah.id) === String(selectedSurahId);
+              return h("button", {
+                key: surah.id,
+                ref: active ? selectedSurahRowRef : null,
+                type: "button",
+                className: "surah-row" + (active ? " active" : ""),
+                role: "option",
+                "aria-selected": active,
+                onClick: function () { selectSurah(surah); }
+              },
+                h("span", { className: "surah-row-main" },
+                  h("span", { className: "surah-name" }, surah.nom),
+                  h("span", { className: "surah-tr" }, surah.latin)
+                ),
+                h("span", { className: "surah-badge" }, surah.id)
+              );
+            })
+          : h("div", { className: "empty-state", style: { padding: "16px" } }, "لا توجد سورة مطابقة")
+      )
+    ];
   }
 
   function renderCategoryChips() {
@@ -620,49 +714,7 @@ function App() {
         addBookmark();
       }
     },
-      h("div", { className: "section-label" }, "السورة"),
-      !selectedSurah && h("input", {
-        id: "surah-search",
-        className: "field",
-        type: "search",
-        value: searchTerm,
-        onChange: function (event) { setSearchTerm(event.target.value); },
-        placeholder: "ابحث بالاسم أو الرقم...",
-        autoComplete: "off"
-      }),
-      !selectedSurah && h("div", { className: "surah-dropdown" },
-        filteredSurahs.length
-          ? filteredSurahs.map(function (surah) {
-              return h("button", {
-                key: surah.id,
-                type: "button",
-                className: "surah-row",
-                onClick: function () {
-                  setSelectedSurahId(String(surah.id));
-                  setSearchTerm("");
-                  setAyahNumber("");
-                }
-              },
-                h("span", { className: "surah-row-main" },
-                  h("span", { className: "surah-name" }, surah.nom),
-                  h("span", { className: "surah-tr" }, surah.latin)
-                ),
-                h("span", { className: "surah-badge" }, surah.id)
-              );
-            })
-          : h("div", { className: "empty-state", style: { padding: "16px" } }, "لا توجد سورة مطابقة")
-      ),
-      selectedSurah && h("div", { className: "surah-chip" },
-        h("div", { className: "surah-chip-main" },
-          h("span", { className: "surah-chip-name" }, selectedSurah.nom + " (" + selectedSurah.id + ")"),
-          h("span", { className: "surah-chip-sub" }, selectedSurah.latin + " — " + selectedSurah.ayahs + " آية")
-        ),
-        h("button", {
-          type: "button",
-          className: "surah-chip-btn",
-          onClick: function () { setSelectedSurahId(""); setSearchTerm(""); }
-        }, "تغيير")
-      ),
+      renderSurahPicker(),
 
       h("div", { className: "verse-row" },
         h("label", { className: "section-label", style: { margin: 0 }, htmlFor: "ayah-number" }, "رقم الآية"),
