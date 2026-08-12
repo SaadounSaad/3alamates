@@ -455,7 +455,7 @@
 
     .verse-inline {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 112px;
+      grid-template-columns: auto minmax(0, 1fr);
       align-items: center;
       gap: 12px;
       margin: 14px 0 0;
@@ -464,9 +464,9 @@
     .verse-inline-copy {
       display: flex;
       align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-      min-width: 0;
+      gap: 6px;
+      min-width: max-content;
+      white-space: nowrap;
     }
 
     .verse-helper {
@@ -482,6 +482,7 @@
 
     .verse-display {
       width: 100%;
+      min-width: 0;
       height: 52px;
       border-radius: 16px;
       border: 2px solid var(--border);
