@@ -956,6 +956,12 @@ function App() {
         addBookmark();
       }
     },
+      wirdInfo && h("div", { className: "wird-info", "aria-live": "polite" },
+        h("span", { className: "wird-info-label" }, "الورد الحالي :"),
+        h("span", null, "الجزء ", h("strong", null, wirdInfo.juz)),
+        h("span", null, "الحزب ", h("strong", null, wirdInfo.hizb))
+      ),
+
       renderSurahPicker(),
 
       h("div", { className: "verse-inline" },
@@ -975,11 +981,6 @@ function App() {
           placeholder: "0",
           autoComplete: "off"
         })
-      ),
-      wirdInfo && h("div", { className: "wird-info", "aria-live": "polite" },
-        h("span", { className: "wird-info-label" }, "الورد الحالي :"),
-        h("span", null, "الجزء ", h("strong", null, wirdInfo.juz)),
-        h("span", null, "الحزب ", h("strong", null, wirdInfo.hizb))
       ),
       h("div", { className: "numeric-keypad", "aria-label": "لوحة الأرقام" },
         [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (digit) {
