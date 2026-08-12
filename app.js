@@ -907,22 +907,24 @@ function App() {
     },
       renderSurahPicker(),
 
-      h("div", { className: "verse-row" },
-        h("label", { className: "section-label", style: { margin: 0 }, htmlFor: "ayah-number" }, "رقم الآية"),
-        h("span", { className: "verse-helper" + (isAyahValid ? " valid" : "") }, validationText)
+      h("div", { className: "verse-inline" },
+        h("div", { className: "verse-inline-copy" },
+          h("label", { className: "section-label", style: { margin: 0 }, htmlFor: "ayah-number" }, "رقم الآية"),
+          h("span", { className: "verse-helper" + (isAyahValid ? " valid" : "") }, validationText)
+        ),
+        h("input", {
+          id: "ayah-number",
+          className: "verse-display" + (isAyahValid ? " valid" : ""),
+          dir: "ltr",
+          type: "text",
+          inputMode: "numeric",
+          pattern: "[0-9]*",
+          value: ayahNumber,
+          onChange: function (event) { setCleanAyah(event.target.value); },
+          placeholder: "0",
+          autoComplete: "off"
+        })
       ),
-      h("input", {
-        id: "ayah-number",
-        className: "verse-display" + (isAyahValid ? " valid" : ""),
-        dir: "ltr",
-        type: "text",
-        inputMode: "numeric",
-        pattern: "[0-9]*",
-        value: ayahNumber,
-        onChange: function (event) { setCleanAyah(event.target.value); },
-        placeholder: "0",
-        autoComplete: "off"
-      }),
       h("div", { className: "numeric-keypad", "aria-label": "لوحة الأرقام" },
         [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (digit) {
           return h("button", {
