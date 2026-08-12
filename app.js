@@ -885,7 +885,7 @@ function App() {
           }, iconDots())
         )
       ),
-      h("div", { className: "header-date" }, formatPrayerDate(prayerData))
+      h("div", { className: "header-date" }, renderPrayerDate(prayerData))
     ),
 
     renderPrayerStrip(),
