@@ -14,6 +14,17 @@ const categories = [
   { id: "priere", label: "صلاة", bg: "#EAF1E6", text: "#4C7A44" }
 ];
 
+const HABOUS_PRAYER_URL = "./api/horaires?ville=1";
+const PRAYER_ORDER = [
+  { key: "fajr", label: "الفجر" },
+  { key: "sunrise", label: "الشروق" },
+  { key: "dhuhr", label: "الظهر" },
+  { key: "asr", label: "العصر" },
+  { key: "maghrib", label: "المغرب" },
+  { key: "isha", label: "العشاء" }
+];
+const NEXT_PRAYER_KEYS = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+
 function safeJsonParse(value, fallback) {
   try {
     return value ? JSON.parse(value) : fallback;
@@ -32,6 +43,91 @@ function normalizeSearch(value) {
 
 function formatReference(surah, ayah) {
   return surah ? surah.nom + ":" + ayah : "";
+}
+
+function parsePrayerDate(time, baseDate, dayOffset) {
+  const parts = String(time || "").trim().split(":");
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1]);
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return null;
+  }
+
+  const date = new Date(baseDate);
+  date.setDate(date.getDate() + dayOffset);
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+}
+
+function formatCountdown(milliseconds) {
+  const totalMinutes = Math.max(0, Math.ceil(milliseconds / 60000));
+
+  if (totalMinutes < 1) {
+    return "أقل من دقيقة";
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (!hours) {
+    return "متبقي " + minutes + "د";
+  }
+
+  return "متبقي " + hours + "س " + minutes + "د";
+}
+
+function getPrayerSummary(prayerData, now) {
+  if (!prayerData || !prayerData.prayers) {
+    return null;
+  }
+
+  const todayPrayers = NEXT_PRAYER_KEYS
+    .map(function (key) {
+      const item = PRAYER_ORDER.find(function (prayer) { return prayer.key === key; });
+      const date = parsePrayerDate(prayerData.prayers[key], now, 0);
+      return date && item ? { key: key, label: item.label, time: prayerData.prayers[key], date: date } : null;
+    })
+    .filter(Boolean);
+
+  let nextPrayer = todayPrayers.find(function (item) {
+    return item.date.getTime() > now.getTime();
+  });
+
+  if (!nextPrayer && prayerData.prayers.fajr) {
+    nextPrayer = {
+      key: "fajr",
+      label: "الفجر",
+      time: prayerData.prayers.fajr,
+      date: parsePrayerDate(prayerData.prayers.fajr, now, 1),
+      tomorrow: true
+    };
+  }
+
+  if (!nextPrayer || !nextPrayer.date) {
+    return null;
+  }
+
+  return {
+    next: nextPrayer,
+    countdown: formatCountdown(nextPrayer.date.getTime() - now.getTime()),
+    others: PRAYER_ORDER
+      .filter(function (item) {
+        return item.key !== nextPrayer.key && prayerData.prayers[item.key];
+      })
+      .map(function (item) {
+        return item.label + " " + prayerData.prayers[item.key];
+      })
+      .join(" · ")
+  };
+}
+
+function formatPrayerDate(prayerData) {
+  if (!prayerData || !prayerData.date) {
+    return "مواقيت الصلاة الرسمية - الرباط";
+  }
+
+  return [prayerData.date.gregorian, prayerData.date.hijri].filter(Boolean).join(" · ");
 }
 
 function iconBookmark() {
@@ -145,6 +241,11 @@ function App() {
   const [listOpen, setListOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState("");
+  const [prayerData, setPrayerData] = useState(null);
+  const [prayerError, setPrayerError] = useState("");
+  const [now, setNow] = useState(function () {
+    return new Date();
+  });
   const [bookmarks, setBookmarks] = useState(function () {
     return safeJsonParse(localStorage.getItem(STORAGE_KEYS.bookmarks), []);
   });
@@ -184,6 +285,47 @@ function App() {
       category: category
     }));
   }, [selectedSurahId, ayahNumber, note, category]);
+
+  useEffect(function () {
+    let cancelled = false;
+
+    fetch(HABOUS_PRAYER_URL, {
+      cache: "no-store",
+      headers: { Accept: "application/json" }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Habous HTTP " + response.status);
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        if (cancelled) {
+          return;
+        }
+        setPrayerData(data);
+        setPrayerError("");
+      })
+      .catch(function () {
+        if (!cancelled) {
+          setPrayerError("تعذر تحميل مواقيت الصلاة");
+        }
+      });
+
+    return function () {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(function () {
+    const timer = window.setInterval(function () {
+      setNow(new Date());
+    }, 30000);
+
+    return function () {
+      window.clearInterval(timer);
+    };
+  }, []);
 
   const selectedSurah = useMemo(function () {
     return surahs.find(function (surah) {
@@ -665,6 +807,26 @@ function App() {
     );
   }
 
+  function renderPrayerStrip() {
+    const summary = getPrayerSummary(prayerData, now);
+
+    if (!summary) {
+      return h("section", { className: "prayer-strip prayer-strip-muted", "aria-live": "polite" },
+        h("div", { className: "prayer-strip-status" }, prayerError || "جاري تحميل مواقيت الصلاة...")
+      );
+    }
+
+    return h("section", { className: "prayer-strip", "aria-label": "مواقيت الصلاة الرسمية لمدينة الرباط" },
+      h("div", { className: "prayer-strip-top" },
+        h("span", { className: "prayer-next-label" }, "التالي"),
+        h("span", { className: "prayer-next-name" }, summary.next.label),
+        h("span", { className: "prayer-next-time" }, summary.next.time),
+        h("span", { className: "prayer-countdown" }, summary.next.tomorrow ? summary.countdown + " غدًا" : summary.countdown)
+      ),
+      h("div", { className: "prayer-other-times" }, summary.others)
+    );
+  }
+
   if (loading) {
     return h("main", { className: "app-shell" },
       h("div", { className: "empty-state" }, "جار تحميل التطبيق...")
@@ -678,26 +840,31 @@ function App() {
   }
 
   return h("main", { className: "app-shell" },
-    h("header", { className: "app-header" },
-      h("div", { className: "brand-lockup" },
-        h("div", { className: "brand-icon" }, iconBookmark()),
-        h("h1", { className: "brand-title" }, "علامات")
+    h("header", { className: "app-header header-stack" },
+      h("div", { className: "header-main" },
+        h("div", { className: "brand-lockup" },
+          h("div", { className: "brand-icon" }, iconBookmark()),
+          h("h1", { className: "brand-title" }, "علامات")
+        ),
+        h("div", { className: "header-actions" },
+          h("button", {
+            type: "button",
+            className: "count-button",
+            onClick: function () { setListOpen(true); },
+            "aria-label": "فتح الإشارات المحفوظة"
+          }, iconBookmark(), h("span", null, bookmarks.length)),
+          h("button", {
+            type: "button",
+            className: "icon-button",
+            onClick: function () { setMenuOpen(true); },
+            "aria-label": "القائمة"
+          }, iconDots())
+        )
       ),
-      h("div", { className: "header-actions" },
-        h("button", {
-          type: "button",
-          className: "count-button",
-          onClick: function () { setListOpen(true); },
-          "aria-label": "فتح الإشارات المحفوظة"
-        }, iconBookmark(), h("span", null, bookmarks.length)),
-        h("button", {
-          type: "button",
-          className: "icon-button",
-          onClick: function () { setMenuOpen(true); },
-          "aria-label": "القائمة"
-        }, iconDots())
-      )
+      h("div", { className: "header-date" }, formatPrayerDate(prayerData))
     ),
+
+    renderPrayerStrip(),
 
     h("input", {
       ref: importInputRef,

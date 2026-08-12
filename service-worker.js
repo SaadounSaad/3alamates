@@ -1,4 +1,4 @@
-const CACHE_NAME = "3alamates-cache-v4";
+const CACHE_NAME = "3alamates-cache-v5";
 const PRECACHE_URLS = [
   "./",
   "./index.html",
@@ -41,6 +41,10 @@ self.addEventListener("fetch", (event) => {
 
   const requestUrl = new URL(event.request.url);
   if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  if (requestUrl.pathname.startsWith("/api/")) {
     return;
   }
 

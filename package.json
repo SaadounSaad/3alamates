@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "node ./scripts/build.mjs",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "check": "node --check app.js && node --check service-worker.js && node --check api/horaires.mjs && node ./scripts/build.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.9",
