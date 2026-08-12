@@ -24,6 +24,25 @@ const PRAYER_ORDER = [
   { key: "isha", label: "العشاء" }
 ];
 const NEXT_PRAYER_KEYS = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+const JUZ_STARTS = [
+  [1, 1], [2, 142], [2, 253], [3, 93], [4, 24], [4, 148],
+  [5, 82], [6, 111], [7, 88], [8, 41], [9, 93], [11, 6],
+  [12, 53], [15, 1], [17, 1], [18, 75], [21, 1], [23, 1],
+  [25, 21], [27, 56], [29, 46], [33, 31], [36, 28], [39, 32],
+  [41, 47], [46, 1], [51, 31], [58, 1], [67, 1], [78, 1]
+];
+const HIZB_STARTS = [
+  [1, 1], [2, 75], [2, 142], [2, 203], [2, 253], [3, 15],
+  [3, 93], [3, 171], [4, 24], [4, 88], [4, 148], [5, 27],
+  [5, 82], [6, 36], [6, 111], [7, 1], [7, 88], [7, 171],
+  [8, 41], [9, 34], [9, 93], [10, 26], [11, 6], [11, 84],
+  [12, 53], [13, 19], [15, 1], [16, 51], [17, 1], [17, 99],
+  [18, 75], [20, 1], [21, 1], [22, 1], [23, 1], [24, 21],
+  [25, 22], [26, 111], [27, 56], [28, 51], [29, 46], [31, 22],
+  [33, 31], [34, 24], [36, 28], [37, 145], [39, 32], [40, 41],
+  [41, 47], [43, 24], [46, 1], [48, 18], [51, 31], [55, 1],
+  [58, 1], [62, 1], [67, 1], [72, 1], [78, 1], [87, 1]
+];
 
 function safeJsonParse(value, fallback) {
   try {
@@ -43,6 +62,37 @@ function normalizeSearch(value) {
 
 function formatReference(surah, ayah) {
   return surah ? surah.nom + ":" + ayah : "";
+}
+
+function compareVerseRef(surahId, ayah, start) {
+  if (surahId !== start[0]) {
+    return surahId - start[0];
+  }
+
+  return ayah - start[1];
+}
+
+function findSectionNumber(starts, surahId, ayah) {
+  let section = 1;
+
+  starts.forEach(function (start, index) {
+    if (compareVerseRef(surahId, ayah, start) >= 0) {
+      section = index + 1;
+    }
+  });
+
+  return section;
+}
+
+function getWirdInfo(surah, ayah) {
+  if (!surah || !ayah) {
+    return null;
+  }
+
+  return {
+    juz: findSectionNumber(JUZ_STARTS, Number(surah.id), Number(ayah)),
+    hizb: findSectionNumber(HIZB_STARTS, Number(surah.id), Number(ayah))
+  };
 }
 
 function parsePrayerDate(time, baseDate, dayOffset) {
@@ -360,6 +410,7 @@ function App() {
   const ayahValue = Number(ayahNumber);
   const isAyahValid = Boolean(selectedSurah && ayahNumber && ayahValue >= 1 && ayahValue <= selectedSurah.ayahs);
   const validationText = selectedSurah ? "من 1 إلى " + selectedSurah.ayahs : "اختر سورة أولا";
+  const wirdInfo = isAyahValid ? getWirdInfo(selectedSurah, ayahValue) : null;
 
   const filteredSurahs = useMemo(function () {
     const query = normalizeSearch(searchTerm);
@@ -924,6 +975,11 @@ function App() {
           placeholder: "0",
           autoComplete: "off"
         })
+      ),
+      wirdInfo && h("div", { className: "wird-info", "aria-live": "polite" },
+        h("span", { className: "wird-info-label" }, "الورد الحالي :"),
+        h("span", null, "الجزء ", h("strong", null, wirdInfo.juz)),
+        h("span", null, "الحزب ", h("strong", null, wirdInfo.hizb))
       ),
       h("div", { className: "numeric-keypad", "aria-label": "لوحة الأرقام" },
         [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (digit) {
