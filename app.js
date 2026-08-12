@@ -122,12 +122,36 @@ function getPrayerSummary(prayerData, now) {
   };
 }
 
-function formatPrayerDate(prayerData) {
+function renderDateWithStrong(value, keyPrefix) {
+  const text = String(value || "");
+  const match = text.match(/(\d{1,2}\s+[^\s]+)/);
+
+  if (!match) {
+    return text;
+  }
+
+  return [
+    text.slice(0, match.index),
+    h("strong", { key: keyPrefix + "-strong", className: "header-date-strong" }, match[1]),
+    text.slice(match.index + match[1].length)
+  ];
+}
+
+function renderPrayerDate(prayerData) {
   if (!prayerData || !prayerData.date) {
     return "مواقيت الصلاة الرسمية - الرباط";
   }
 
-  return [prayerData.date.gregorian, prayerData.date.hijri].filter(Boolean).join(" · ");
+  if (!prayerData.date.hijri && !prayerData.date.gregorian) {
+    return "مواقيت الصلاة الرسمية - الرباط";
+  }
+
+  return [
+    prayerData.date.hijri && renderDateWithStrong(prayerData.date.hijri, "hijri"),
+    prayerData.date.hijri && prayerData.date.gregorian ? " " : "",
+    prayerData.date.gregorian && renderDateWithStrong(prayerData.date.gregorian, "gregorian"),
+    " ·"
+  ];
 }
 
 function iconBookmark() {
