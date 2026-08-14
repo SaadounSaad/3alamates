@@ -95,6 +95,12 @@ function getWirdInfo(surah, ayah) {
   };
 }
 
+function getHizbStart(hizb) {
+  const index = Number(hizb) - 1;
+  const start = HIZB_STARTS[index];
+  return start ? { surahId: start[0], ayah: start[1] } : null;
+}
+
 function parsePrayerDate(time, baseDate, dayOffset) {
   const parts = String(time || "").trim().split(":");
   const hours = Number(parts[0]);
@@ -532,6 +538,32 @@ function App() {
     setSurahPickerOpen(false);
   }
 
+  function jumpToHizb(delta) {
+    if (!wirdInfo) {
+      showStatus("اختر سورة وآية أولا.");
+      return;
+    }
+
+    const target = getHizbStart(wirdInfo.hizb + delta);
+    if (!target) {
+      showStatus(delta > 0 ? "أنت في آخر حزب." : "أنت في أول حزب.");
+      return;
+    }
+
+    const targetSurah = surahs.find(function (surah) {
+      return Number(surah.id) === target.surahId;
+    });
+
+    if (!targetSurah) {
+      return;
+    }
+
+    setSelectedSurahId(String(targetSurah.id));
+    setAyahNumber(String(target.ayah));
+    setSearchTerm("");
+    setSurahPickerOpen(false);
+  }
+
   function addBookmark() {
     if (!selectedSurah) {
       showStatus("اختر سورة قبل الحفظ.");
@@ -959,7 +991,23 @@ function App() {
       wirdInfo && h("div", { className: "wird-info", "aria-live": "polite" },
         h("span", { className: "wird-info-label" }, "الورد الحالي :"),
         h("span", null, "الجزء ", h("strong", null, wirdInfo.juz)),
-        h("span", null, "الحزب ", h("strong", null, wirdInfo.hizb))
+        h("span", null, "الحزب ", h("strong", null, wirdInfo.hizb)),
+        h("span", { className: "wird-stepper", role: "group", "aria-label": "تغيير الحزب" },
+          h("button", {
+            type: "button",
+            className: "wird-stepper-button",
+            onClick: function () { jumpToHizb(1); },
+            disabled: wirdInfo.hizb >= HIZB_STARTS.length,
+            "aria-label": "الحزب التالي"
+          }, "+"),
+          h("button", {
+            type: "button",
+            className: "wird-stepper-button",
+            onClick: function () { jumpToHizb(-1); },
+            disabled: wirdInfo.hizb <= 1,
+            "aria-label": "الحزب السابق"
+          }, "-")
+        )
       ),
 
       renderSurahPicker(),

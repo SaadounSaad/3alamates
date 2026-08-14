@@ -529,6 +529,37 @@
       font-weight: 800;
     }
 
+    .wird-stepper {
+      direction: ltr;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .wird-stepper-button {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--accent-dark);
+      font-size: 19px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, opacity 120ms ease;
+    }
+
+    .wird-stepper-button:active:not(:disabled) {
+      transform: scale(0.94);
+      background: var(--accent-soft);
+    }
+
+    .wird-stepper-button:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
     .numeric-keypad {
       direction: ltr;
       display: grid;
